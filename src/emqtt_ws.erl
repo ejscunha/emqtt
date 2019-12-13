@@ -37,10 +37,15 @@
 
 connect(Host, Port, Opts, Timeout) ->
     {ok, _} = application:ensure_all_started(gun),
+    {Transport, TransportOpts} = case lists:keyfind(ssl_opts, 1, Opts) of
+        {ssl_opts, SslOpts} -> {tls, SslOpts};
+        false -> {tcp, Opts}
+    end,
     %% 1. open connection
     ConnOpts = #{connect_timeout => Timeout,
-                 retry => 3,
-                 retry_timeout => 30000
+                 retry => 0,
+                 transport => Transport,
+                 transport_opts => TransportOpts
                 },
     case gun:open(Host, Port, ConnOpts) of
         {ok, ConnPid} ->
