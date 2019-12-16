@@ -49,9 +49,12 @@ connect(Host, Port, Opts, Timeout) ->
                 },
     case gun:open(Host, Port, ConnOpts) of
         {ok, ConnPid} ->
-            {ok, _} = gun:await_up(ConnPid, Timeout),
-            case upgrade(ConnPid, Opts, Timeout) of
-                {ok, _Headers} -> {ok, ConnPid};
+            case gun:await_up(ConnPid, Timeout) of
+                {ok, _} ->
+                    case upgrade(ConnPid, Opts, Timeout) of
+                        {ok, _Headers} -> {ok, ConnPid};
+                        Error -> Error
+                    end;
                 Error -> Error
             end;
         Error -> Error
